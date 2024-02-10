@@ -1,6 +1,7 @@
 package com.backend.backend;
 
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -26,6 +28,28 @@ public class UserController {
     public List<User> getAllUsers() {
         return StreamSupport.stream(userRepository.findAll().spliterator(), false)
             .collect(Collectors.toList());
+    }
+
+    @PostMapping("/createUser")
+    public User createUser(@RequestBody User newUser) {
+        return userRepository.save(newUser);
+    }
+
+    @PutMapping("/updateUser/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updatedUserData) {
+        // Find the existing user by ID
+        if (!userRepository.existsById(id)) {
+            // If not found, return a 404 Not Found response
+             String errorMessage = "User with ID " + id + " not found";
+             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new UserErrorResponse(id, errorMessage)
+            );
+    
+        }
+
+        // Save the updated user to the database
+        User updatedUser = userRepository.save(updatedUserData);
+        return ResponseEntity.ok(updatedUser);
     }
 
     // Get all users
