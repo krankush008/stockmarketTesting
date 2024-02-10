@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "my connection",
+            "database": "ankushkumar",
+            "username": "root",
+            "password": "atylbvc_+90B"
+        }
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
+}
