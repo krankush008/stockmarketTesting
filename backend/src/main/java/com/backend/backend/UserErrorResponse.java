@@ -1,16 +1,31 @@
 package com.backend.backend;
 
 public class UserErrorResponse {
-    private Long id;
+    private long id;
     private String errorMsg;
 
-    // Constructors, getters, and setters...
+    public UserErrorResponse() {
+        // Default constructor for serialization
+    }
 
-    public UserErrorResponse(Long id, String errorMsg) {
+    public UserErrorResponse(long id, String errorMsg) {
         this.id = id;
         this.errorMsg = errorMsg;
     }
-    
-    // Other methods or customization based on your needs...
-}
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+}
