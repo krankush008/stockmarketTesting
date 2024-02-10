@@ -1,15 +1,12 @@
 package com.backend.backend;
 
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.Optional;
 
 
 @RestController
@@ -24,17 +21,26 @@ public class UserController {
         return "hello users";
     }
     
-    @GetMapping("/getUsers")
-    public List<User> getAllUsers() {
-        return StreamSupport.stream(userRepository.findAll().spliterator(), false)
-            .collect(Collectors.toList());
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/getUser/{userId}")
+public ResponseEntity<User> getUserById(@PathVariable Long userId) {
+    Optional<User> userOptional = userRepository.findById(userId);
+
+    if (userOptional.isPresent()) {
+        User user = userOptional.get();
+        return ResponseEntity.ok(user);
+    } else {
+        return ResponseEntity.notFound().build();
     }
+}
 
     @PostMapping("/createUser")
     public User createUser(@RequestBody User newUser) {
         return userRepository.save(newUser);
     }
 
+
+    @CrossOrigin(origins = "http://localhost:3000")
     @PutMapping("/updateUser/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updatedUserData) {
         // Find the existing user by ID
