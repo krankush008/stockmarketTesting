@@ -1,0 +1,19 @@
+version: "3.8"
+services: 
+    server: 
+      build: .
+      restart: always
+      ports: 
+        - 8080:8080
+      depends_on:
+        - mysqldb
+    mysqldb:
+      image: "mysql:8.0"
+      restart: always
+      ports:
+        - 3307:3306
+      environment:
+        MYSQL_DATABASE: ankushkumar
+        MYSQL_USER: root
+        MYSQL_PASSWORD: atylbvc_+90B
+        MYSQL_ROOT_PASSWORD: atylbvc_+90B
