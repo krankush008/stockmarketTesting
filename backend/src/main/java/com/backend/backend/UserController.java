@@ -23,16 +23,17 @@ public class UserController {
     
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/getUser/{userId}")
-public ResponseEntity<User> getUserById(@PathVariable Long userId) {
-    Optional<User> userOptional = userRepository.findById(userId);
+    public ResponseEntity<User> getUserById(@PathVariable Long userId) {
+        System.out.println("get user ankush");
+        Optional<User> userOptional = userRepository.findById(userId);
 
-    if (userOptional.isPresent()) {
-        User user = userOptional.get();
-        return ResponseEntity.ok(user);
-    } else {
-        return ResponseEntity.notFound().build();
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
-}
 
     @PostMapping("/createUser")
     public User createUser(@RequestBody User newUser) {
@@ -44,6 +45,7 @@ public ResponseEntity<User> getUserById(@PathVariable Long userId) {
     @PutMapping("/updateUser/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updatedUserData) {
         // Find the existing user by ID
+        System.out.println("update user ankush");
         if (!userRepository.existsById(id)) {
             // If not found, return a 404 Not Found response
              String errorMessage = "User with ID " + id + " not found";

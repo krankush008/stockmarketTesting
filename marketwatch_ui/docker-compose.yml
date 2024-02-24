@@ -1,0 +1,14 @@
+version: "3.8"
+services: 
+    server: 
+      build: .
+      restart: always
+      ports: 
+        - 3004:3000
+      volumes:
+      - /home/ankush-kumar/Downloads/stockmarket1/marketwatch_ui:/app
+      - /home/ankush-kumar/Downloads/stockmarket1/marketwatch_ui/node_modules:/app/node_modules
+      stdin_open: true
+      tty: true
+      # volumes:
+      #   - ./ankushkumar_user.sql:/docker-entrypoint-initdb.d/ankushkumar_user.sql
