@@ -3,27 +3,55 @@ import { parse, differenceInMonths, getMonth, parseISO } from 'date-fns';
 import axios from 'axios';
 
 const BondFilter = () => {
+  const [showFilters, setShowFilters] = useState(false);
   const [issuer, setIssuer] = useState('');
   const [issuers, setIssuers] = useState([]);
   const [creditScore, setCreditScore] = useState('');
   const [creditScores, setCreditScores] = useState([]);
   const [maturity, setMaturity] = useState('');
   const [xirrThreshold, setXirrThreshold] = useState('');
+  const [xirrThresholds, setXirrThresholds] = useState({});
   const [allBonds, setAllBonds] = useState([]);
   const [filteredBonds, setFilteredBonds] = useState([]);
   const [selectedBonds, setSelectedBonds] = useState([]);
   const [xirrError, setXirrError] = useState('');
+  const [filters, setFilters] = useState([]);
+  const [filteredBondsMap, setFilteredBondsMap] = useState({});
 
-  const handleBondSelect = (bond) => {
-    selectedBonds.includes(bond);
-    setSelectedBonds((prevSelected) =>
-      [...prevSelected, {
-        bonds_id: bond.isin,    // Assuming isin corresponds to bonds_id
-        user_id: 5,             // Replace with the actual user_id
-        xirr: xirrThreshold,        // Assuming xirr corresponds to xirr
-      }]
-    );
+  const handleBondSelect = (filterIndex, bond, isChecked) => {
+   
+    const filter1 = JSON.parse(localStorage.getItem('filters'));
+    const updatedFilters = [...filter1];
+    const selectedBonds = updatedFilters[filterIndex].selectedBonds;
+
+    if (!isChecked) {
+        // Deselect bond
+        updatedFilters[filterIndex].selectedBonds = selectedBonds.filter((selected) => selected !== bond);
+    } else {
+        // Select bond
+        updatedFilters[filterIndex].selectedBonds = [...selectedBonds, bond];
+    }
+
+    // Save updatedFilters to localStorage
+    localStorage.setItem('filters',JSON.stringify(updatedFilters));
+
+    console.log("updatedFilters "+JSON.stringify(updatedFilters));
+    console.log("hhah "+JSON.stringify(filters));
   };
+  
+  // useEffect(() => {
+  //   console.log('Filters state changed:', JSON.stringify(filters));
+  // }, [filters]);
+  useEffect(() => {
+    console.log("akr rka");
+    const rawFilters = localStorage.getItem('filters');
+    console.log('Raw Filters:'+ typeof rawFilters);
+    const savedFilters = JSON.parse(rawFilters);
+    if (savedFilters) {
+        setFilters((savedFilters));
+        console.log('Filtersak:', savedFilters);
+    }
+}, []);
 
   const bondsData = selectedBonds.map(bond => ({
     user_id: 5,
@@ -131,73 +159,130 @@ const BondFilter = () => {
     setFilteredBonds(filtered);
   };
 
+  const filterBonds1 = (index) => {
+    filters[index].bonds=[];
+    filters[index].selectedBonds=[];
+    const filter = filters[index];
+    const filtered = allBonds.filter((bond) => {
+      const maturityMatches = calculateMonthsDifference(bond.maturityDate) == filter.maturity;
+      const creditScoreMatches = bond.creditScore === filter.creditScore;
+    
+      return maturityMatches && creditScoreMatches;
+    });
+    console.log("filtered ank = "+JSON.stringify(filtered));
+    filters[index].bonds = filtered;
+  };
+  const handleAddFilter = () => {
+    const newFilter = {
+      creditScore: '',
+      maturity: '',
+      xirrThreshold: '',
+      bonds: [],
+      selectedBonds: []
+    };
+    const updatedFilters = [...filters, newFilter];
+
+    localStorage.setItem('filters', JSON.stringify(updatedFilters));
+  };
+
+  const handleRemoveFilter = (index) => {
+    const updatedFilters = filters.filter((_, i) => i !== index);
+    localStorage.setItem('filters', updatedFilters);
+  };
+
+  const handleFilterChange = (index, field, value) => {
+    const updatedFilters = [...filters];
+    updatedFilters[index][field] = value;
+    localStorage.setItem('filters', JSON.stringify(updatedFilters));
+  };
+  const handleThresholdChange = (isin, value) => {
+    setXirrThresholds((prevThresholds) => ({ ...prevThresholds, [isin]: value }));
+  };
+  
 
   return (
     <div>
       <h2>Bond Filters</h2>
-
-      <select id="creditScore" onChange={(e) => setCreditScore(e.target.value)} value={creditScore}>
-        <option value="">Select Credit Score</option>
-        {allBonds.map((option) => (
-          <option key={option.creditScore} value={option.creditScore}>
-            {option.creditScore}
-          </option>
-        ))}
-      </select>
-
-      <label htmlFor="maturity">Maturity:</label>
-      <select id="maturity" onChange={(e) => setMaturity(e.target.value)} value={maturity}>
-        <option value="">Select Maturity</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-        <option value="6">6</option>
-        <option value="7">7</option>
-        <option value="8">8</option>
-        <option value="9">9</option>
-        <option value="10">10</option>
-        <option value="11">11</option>
-        <option value="12">12</option>
-        <option value="23">23</option>
-      </select>
-
-      
-
-      <label htmlFor="xirrThreshold">XIRR Threshold:</label>
-      <input type="number" id="xirrThreshold" onChange={(e) => setXirrThreshold(e.target.value)} value={xirrThreshold} />
-
-      <button type="button" onClick={filterBonds}>Apply Filters</button>
-
-      <h3>Filtered Bonds:</h3>
       <div>
-      <ul>
-        {filteredBonds.map((bond) => (
-          <li key={bond.isin}>
-          <label>
-            <input
-              type="checkbox"
-              onChange={() => handleBondSelect(bond)}
-            />
-            ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturity}, XIRR: {bond.xirr}
-              <>
-                <input
-                  type="number"
-                  id="xirrThreshold"
-                  onChange={(e) => setXirrThreshold(e.target.value)}
-                  value={xirrThreshold}
-                  required={selectedBonds.includes(bond)}  // Add the 'required' attribute conditionally
-                />
-                Threshold
-              </>
-          </label>
-        </li>
-        
-        ))}
-      </ul>
-      {xirrError && <p style={{ color: 'red' }}>{xirrError}</p>}
-      <button onClick={handleSubmit}>Submit</button>
+      <button onClick={handleAddFilter}>Add Filter</button>
+      {console.log("Mankfilters = "+filters)}
+      {filters.map((filter, index) => (
+        <div key={index}>
+          <label>Credit Score:</label>
+          <select
+            id={`creditScore-${index}`}
+            onChange={(e) => handleFilterChange(index, 'creditScore', e.target.value)}
+            value={filter.creditScore}
+          >
+            <option value="">Select Credit Score</option>
+            {allBonds.map((option) => (
+              <option key={option.creditScore} value={option.creditScore}>
+                {option.creditScore}
+              </option>
+            ))}
+          </select>
+
+
+          <button onClick={() => handleRemoveFilter(index)}>Remove</button> 
+
+          <label>Maturity:</label>
+          <select
+            id={`maturity-${index}`}
+            onChange={(e) => handleFilterChange(index, 'maturity', e.target.value)}
+            value={filter.maturity}
+          >
+            <option value="">Select Maturity</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="23">23</option>
+          </select>   
+
+          <button type="button" onClick={filterBonds1(index)}>Apply Filters</button>
+          <h3>Filtered Bonds:</h3>
+<div>
+{console.log("myfilters "+JSON.stringify(filters))}
+  <ul>
+    {filters[index].bonds.map((bond) => (
+      <li key={bond.isin}>
+        <label>
+          <input
+            type="checkbox"
+            onChange={(e) => handleBondSelect(index, bond, e.target.checked)}
+          />
+          ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturity}, XIRR: {bond.xirr}, selectedBonds: {filters[index].selectedBonds}
+          {filters[index].selectedBonds.includes(bond) && (
+            <>
+              <input
+                type="number"
+                id={`xirrThreshold-${bond.isin}`}
+                onChange={(e) => handleThresholdChange(bond.isin, e.target.value)}
+                value={xirrThresholds[bond.isin] || ''}
+                required  // Add the 'required' attribute conditionally
+              />
+              Threshold
+            </>
+          )}
+        </label>
+      </li>
+    ))}
+  </ul>
+</div>
+
+
+          </div>
+      ))}    
+
+
     </div>
 
     </div>
