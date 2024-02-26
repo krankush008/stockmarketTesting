@@ -1,4 +1,4 @@
-package com.backend.backend;
+package com.backend.backend.Entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 
 @Entity
 public class Alerts {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long alertId;
@@ -14,13 +15,9 @@ public class Alerts {
     private Long userId;
     private Double xirr;
 
-    // Constructors, getters, setters, etc.
-    
-    // Example constructor without arguments
     public Alerts() {
     }
 
-    // Example constructor with arguments
     public Alerts(String bondsId, Long userId, Double xirr) {
         this.bondsId = bondsId;
         this.userId = userId;
@@ -31,11 +28,11 @@ public class Alerts {
         return alertId;
     }
 
-    public String getBonds_id() {
+    public String getBondsId() {
         return bondsId;
     }
 
-    public Long getUser_id() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -43,17 +40,16 @@ public class Alerts {
         return xirr;
     }
 
-    // Setters
     public void setAlertId(Long alertId) {
         this.alertId = alertId;
     }
 
-    public void setBonds_id(String bonds_id) {
-        this.bondsId = bonds_id;
+    public void setBondsId(String bondsId) {
+        this.bondsId = bondsId;
     }
 
-    public void setUser_id(Long user_id) {
-        this.userId = user_id;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public void setXirr(Double xirr) {

@@ -15,8 +15,20 @@ const BondFilter = () => {
   const [filteredBonds, setFilteredBonds] = useState([]);
   const [selectedBonds, setSelectedBonds] = useState([]);
   const [xirrError, setXirrError] = useState('');
-  const [filters, setFilters] = useState([]);
+ // const [filters, setFilters] = useState([]);
   const [filteredBondsMap, setFilteredBondsMap] = useState({});
+  const [localStorageChange, setLocalStorageChange] = useState(false);
+  const rawFilters = localStorage.getItem('filters');
+  const filters = rawFilters ? JSON.parse(rawFilters) : [];
+
+  const useForceUpdate = () => {
+    const [, setTick] = React.useState(0);
+    const update = React.useCallback(() => {
+      setTick((tick) => tick + 1);
+    }, []);
+    return update;
+  };
+  const forceUpdate = useForceUpdate();
 
   const handleBondSelect = (filterIndex, bond, isChecked) => {
    
@@ -26,7 +38,13 @@ const BondFilter = () => {
 
     if (!isChecked) {
         // Deselect bond
-        updatedFilters[filterIndex].selectedBonds = selectedBonds.filter((selected) => selected !== bond);
+        const newSelectedBonds = [];
+        for (let i = 0; i < selectedBonds.length; i++) {
+          if (JSON.stringify(selectedBonds[i]) !== JSON.stringify(bond)) {
+            newSelectedBonds.push(selectedBonds[i]);
+          }
+        }
+        updatedFilters[filterIndex].selectedBonds = newSelectedBonds;
     } else {
         // Select bond
         updatedFilters[filterIndex].selectedBonds = [...selectedBonds, bond];
@@ -37,21 +55,26 @@ const BondFilter = () => {
 
     console.log("updatedFilters "+JSON.stringify(updatedFilters));
     console.log("hhah "+JSON.stringify(filters));
+    setLocalStorageChange(true);
   };
   
   // useEffect(() => {
   //   console.log('Filters state changed:', JSON.stringify(filters));
   // }, [filters]);
   useEffect(() => {
-    console.log("akr rka");
-    const rawFilters = localStorage.getItem('filters');
-    console.log('Raw Filters:'+ typeof rawFilters);
-    const savedFilters = JSON.parse(rawFilters);
-    if (savedFilters) {
-        setFilters((savedFilters));
-        console.log('Filtersak:', savedFilters);
+    if (localStorageChange) {
+      // console.log("akr rka");
+      // const rawFilters = localStorage.getItem('filters');
+      // console.log('Raw Filters:'+ typeof rawFilters);
+      // const savedFilters = JSON.parse(rawFilters);
+      // if (savedFilters) {
+      //     setFilters((savedFilters));
+      //     console.log('Filtersak:', savedFilters);
+      // }
+      forceUpdate();
+      setLocalStorageChange(false);
     }
-}, []);
+}, [localStorageChange]);
 
   const bondsData = selectedBonds.map(bond => ({
     user_id: 5,
@@ -180,20 +203,33 @@ const BondFilter = () => {
       bonds: [],
       selectedBonds: []
     };
-    const updatedFilters = [...filters, newFilter];
+    console.log("localstorage = "+localStorage.getItem('filters'));
+    var updatedFilters;
+    if(localStorage.getItem('filters')!=null){
+      updatedFilters = [...JSON.parse(localStorage.getItem('filters')), newFilter];
+    }
+    else{
+      updatedFilters = [newFilter];
+    }
+    
 
     localStorage.setItem('filters', JSON.stringify(updatedFilters));
+    setLocalStorageChange(true);
   };
 
   const handleRemoveFilter = (index) => {
-    const updatedFilters = filters.filter((_, i) => i !== index);
-    localStorage.setItem('filters', updatedFilters);
+    var filter1 = JSON.parse(localStorage.getItem('filters'));
+    const updatedFilters = filter1.filter((_, i) => i !== index);
+    localStorage.setItem('filters', JSON.stringify(updatedFilters));
+    setLocalStorageChange(true);
   };
 
   const handleFilterChange = (index, field, value) => {
-    const updatedFilters = [...filters];
+    var filter1 = JSON.parse(localStorage.getItem('filters'));
+    const updatedFilters = [...filter1];
     updatedFilters[index][field] = value;
     localStorage.setItem('filters', JSON.stringify(updatedFilters));
+    setLocalStorageChange(true);
   };
   const handleThresholdChange = (isin, value) => {
     setXirrThresholds((prevThresholds) => ({ ...prevThresholds, [isin]: value }));

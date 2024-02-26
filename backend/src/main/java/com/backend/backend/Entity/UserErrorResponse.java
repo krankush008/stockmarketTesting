@@ -1,4 +1,4 @@
-package com.backend.backend;
+package com.backend.backend.Entity;
 
 public class UserErrorResponse {
     private long id;
