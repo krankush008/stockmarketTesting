@@ -9,4 +9,5 @@ import com.backend.backend.Entity.Alerts;
 public interface AlertsRepository extends CrudRepository<Alerts, Long> {
     Optional<Alerts> findByBondsIdAndUserId(String bondsId, Long userId);
     List<Alerts> findByBondsIdAndXirrLessThan(String bondsId, BigDecimal xirr);
+    List<Alerts> findByUserId(Long userId);
 }
