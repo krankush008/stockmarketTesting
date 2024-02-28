@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useReducer } from 'react';
 import axios from 'axios';
-import './BondFilterUpdated.css'; // Import CSS file for styling
+import './BondFilterUpdated.css';
 
 const initialState = {
   allBonds: [],
@@ -8,7 +8,6 @@ const initialState = {
   maxMonthsRange: 12,
   selectedBonds: new Map(),
 };
-
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SET_ALL_BONDS':
@@ -70,7 +69,7 @@ const BondFilterUpdated = () => {
   const handleAddFilter = () => {
     dispatch({ type: 'ADD_FILTER', payload: { creditScore: '', maturity: '', threshold: '', bonds: [] } });
   };
-
+  
   const handleRemoveFilter = (index) => {
     const updatedSelectedBonds = new Map(selectedBonds);
     filters[index].bonds.forEach(bond => updatedSelectedBonds.delete(bond.isin));
@@ -88,7 +87,17 @@ const BondFilterUpdated = () => {
   };
 
   const handleThresholdChange = (bond, threshold) => {
-    dispatch({ type: 'SET_SELECTED_BONDS', payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: parseInt(threshold) }) });
+    if (threshold === '' && selectedBonds.has(bond.isin)) {
+      dispatch({
+        type: 'SET_SELECTED_BONDS',
+        payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: '' })
+      });
+    } else {
+      dispatch({
+        type: 'SET_SELECTED_BONDS',
+        payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: parseInt(threshold) })
+      });
+    }
   };
 
   const handleCheckboxChange = (bond) => {
@@ -97,7 +106,10 @@ const BondFilterUpdated = () => {
       updatedSelectedBonds.delete(bond.isin);
       dispatch({ type: 'SET_SELECTED_BONDS', payload: updatedSelectedBonds });
     } else {
-      dispatch({ type: 'SET_SELECTED_BONDS', payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: 0 }) });
+      dispatch({
+        type: 'SET_SELECTED_BONDS',
+        payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: '' })
+      });
     }
   };
 
@@ -144,27 +156,31 @@ const BondFilterUpdated = () => {
           </div>
           <h3 className="filtered-bonds-title">Filtered Bonds:</h3>
           <ul className="filtered-bonds-list">
-            {filter.bonds.map((bond, bondIndex) => (
-              <li key={bondIndex} className="bond-item">
-                <label className="bond-label">
-                  <input
-                    type="checkbox"
-                    className="bond-checkbox"
-                    onChange={() => handleCheckboxChange(bond)}
-                    checked={selectedBonds.has(bond.isin)}
-                  />
-                  ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturityDate}
-                  Threshold:
-                  <input
-                    type="number"
-                    className="threshold-input"
-                    min="0"
-                    value={selectedBonds.has(bond.isin) ? selectedBonds.get(bond.isin).threshold : ''}
-                    onChange={(e) => handleThresholdChange(bond, e.target.value)}
-                  />
-                </label>
-              </li>
-            ))}
+          {filter.bonds.map((bond, bondIndex) => (
+  <li key={bondIndex} className="bond-item">
+    <label className="bond-label">
+      <input
+        type="checkbox"
+        className="bond-checkbox"
+        onChange={() => handleCheckboxChange(bond)}
+        checked={selectedBonds.has(bond.isin)}
+      />
+      ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturityDate}
+      {selectedBonds.has(bond.isin) && selectedBonds.get(bond.isin).threshold === '' && (
+        <span style={{ color: 'red', marginLeft: '10px' }}>Please enter threshold</span>
+      )}
+      Threshold:
+      <input
+        type="number"
+        className="threshold-input"
+        min="0"
+        value={selectedBonds.has(bond.isin) ? selectedBonds.get(bond.isin).threshold : ''}
+        onChange={(e) => handleThresholdChange(bond, e.target.value)}
+      />
+    </label>
+  </li>
+))}
+
           </ul>
         </div>
       ))}
