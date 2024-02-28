@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo, useReducer } from 'react';
 import axios from 'axios';
-import './BondFilterUpdated.css'; // Import CSS file for styling
+import './BondFilterUpdated.css';
+import Alerts from './Alerts';
 
-const initialState = {
+export const initialState = {
   allBonds: [],
   filters: [],
   maxMonthsRange: 12,
   selectedBonds: new Map(),
 };
-
-const reducer = (state, action) => {
+export const reducer = (state, action) => {
   switch (action.type) {
     case 'SET_ALL_BONDS':
       return { ...state, allBonds: action.payload };
@@ -38,8 +38,10 @@ const BondFilterUpdated = () => {
     const fetchAllBonds = async () => {
       try {
         const response = await axios.get('http://localhost:3001');
-        dispatch({ type: 'SET_ALL_BONDS', payload: response.data });
-        const maxMaturity = Math.max(...response.data.map(bond => monthsToDisplay(bond.maturityDate)));
+        // Filter out the empty object from the response data
+        const filteredBonds = response.data.filter(bond => bond.isin !== '' && bond.maturityDate !== '' && bond.creditScore !== '');
+        dispatch({ type: 'SET_ALL_BONDS', payload: filteredBonds });
+        const maxMaturity = Math.max(...filteredBonds.map(bond => monthsToDisplay(bond.maturityDate)));
         dispatch({ type: 'SET_MAX_MONTHS_RANGE', payload: maxMaturity });
       } catch (error) {
         console.error('Error fetching all bonds data:', error);
@@ -88,7 +90,17 @@ const BondFilterUpdated = () => {
   };
 
   const handleThresholdChange = (bond, threshold) => {
-    dispatch({ type: 'SET_SELECTED_BONDS', payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: parseInt(threshold) }) });
+    if (threshold === '' && selectedBonds.has(bond.isin)) {
+      dispatch({
+        type: 'SET_SELECTED_BONDS',
+        payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: '' })
+      });
+    } else {
+      dispatch({
+        type: 'SET_SELECTED_BONDS',
+        payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: parseInt(threshold) })
+      });
+    }
   };
 
   const handleCheckboxChange = (bond) => {
@@ -97,16 +109,54 @@ const BondFilterUpdated = () => {
       updatedSelectedBonds.delete(bond.isin);
       dispatch({ type: 'SET_SELECTED_BONDS', payload: updatedSelectedBonds });
     } else {
-      dispatch({ type: 'SET_SELECTED_BONDS', payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: 0 }) });
+      dispatch({
+        type: 'SET_SELECTED_BONDS',
+        payload: new Map(selectedBonds).set(bond.isin, { bond, threshold: '' })
+      });
     }
   };
 
+  // const handleSubmit = () => {
+  //   console.log('Selected Bonds with Threshold:', Array.from(selectedBonds.values()));
+
+  // };
   const handleSubmit = () => {
-    console.log('Selected Bonds with Threshold:', Array.from(selectedBonds.values()));
+    const selectedBondsArray = Array.from(selectedBonds.values());
+    console.log('Selected Bonds with Threshold:', selectedBondsArray);
+    const invalidThreshold = selectedBondsArray.some(bond => bond.threshold === '');
+    if (invalidThreshold) {
+      alert('Please enter threshold for all selected bonds');
+      return;
+    }
+    const alertsDataArray = selectedBondsArray.map(bond => ({
+      bondId: bond.bond.isin,
+      userId: 123,
+      xirr: bond.threshold
+    }));
+    console.log('Alerts Data Array:', alertsDataArray);
+
+    axios.put('http://localhost:8080/api/createAlerts', alertsDataArray)
+      .then(response => {
+        console.log('Alerts created successfully:', response.data);
+      })
+      .catch(error => {
+        console.error('Error creating alerts:', error.message);
+      });
   };
+
   return (
     <div className="bond-filter-container">
       <h2 className="page-title">Bond Filters</h2>
+
+      {/*  alredy bonds in db  */}
+      <h3 className="filtered-bonds-title">Bonds:</h3>
+      <Alerts
+  
+    allBonds={allBonds}
+    selectedBonds={selectedBonds}
+    dispatch={dispatch} 
+  />
+  
       <button className="add-filter-btn" onClick={handleAddFilter}>Add Filter</button>
       {filters.map((filter, index) => (
         <div key={index} className="filter-section">
@@ -133,7 +183,7 @@ const BondFilterUpdated = () => {
               <option value="">Select Maturity</option>
               {uniqueMonths.map((month, i) => (
                 <option key={i} value={month}>
-                  {`${month} month${month > 1 ? 's' : ''}`}
+                  {month} months
                 </option>
               ))}
             </select>
@@ -144,27 +194,37 @@ const BondFilterUpdated = () => {
           </div>
           <h3 className="filtered-bonds-title">Filtered Bonds:</h3>
           <ul className="filtered-bonds-list">
-            {filter.bonds.map((bond, bondIndex) => (
-              <li key={bondIndex} className="bond-item">
-                <label className="bond-label">
-                  <input
-                    type="checkbox"
-                    className="bond-checkbox"
-                    onChange={() => handleCheckboxChange(bond)}
-                    checked={selectedBonds.has(bond.isin)}
-                  />
-                  ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturityDate}
-                  Threshold:
-                  <input
-                    type="number"
-                    className="threshold-input"
-                    min="0"
-                    value={selectedBonds.has(bond.isin) ? selectedBonds.get(bond.isin).threshold : ''}
-                    onChange={(e) => handleThresholdChange(bond, e.target.value)}
-                  />
-                </label>
-              </li>
-            ))}
+
+            {
+      (filter.bonds.length > 0) ? (
+        filter.bonds.map((bond, bondIndex) => (
+          <li key={bondIndex} className="bond-item">
+            <label className="bond-label">
+              <input
+                type="checkbox"
+                className="bond-checkbox"
+                onChange={() => handleCheckboxChange(bond)}
+                checked={selectedBonds.has(bond.isin)}
+              />
+              ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturityDate}
+              {selectedBonds.has(bond.isin) && selectedBonds.get(bond.isin).threshold === '' && (
+                <span style={{ color: 'red', marginLeft: '10px' }}>Please enter threshold</span>
+              )}
+              Threshold:
+              <input
+                type="number"
+                className="threshold-input"
+                min="0"
+                value={selectedBonds.has(bond.isin) ? selectedBonds.get(bond.isin).threshold : ''}
+                onChange={(e) => handleThresholdChange(bond, e.target.value)}
+              />
+            </label>
+          </li>
+        ))  
+      ) : (
+        <li>No bonds found</li>
+      )
+    }
           </ul>
         </div>
       ))}

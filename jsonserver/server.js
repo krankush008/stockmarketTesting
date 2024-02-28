@@ -21,6 +21,15 @@ app.get('/', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
+app.get("/bonds", (req, res) => {
+  fs.readFile('alerts.json', 'utf8', (err, data) => {
+    if (err) {
+      throw err;
+    }
+    const bonds = JSON.parse(data);
+    res.json(bonds);
+  });
+});
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
