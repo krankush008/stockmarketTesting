@@ -37,7 +37,7 @@ const BondFilterUpdated = () => {
   useEffect(() => {
     const fetchAllBonds = async () => {
       try {
-        const response = await axios.get('http://localhost:3001');
+        const response = await axios.get(`http://localhost:8080/api/bonds`);
         // Filter out the empty object from the response data
         const filteredBonds = response.data.filter(bond => bond.isin !== '' && bond.maturityDate !== '' && bond.creditScore !== '');
         dispatch({ type: 'SET_ALL_BONDS', payload: filteredBonds });
@@ -116,10 +116,6 @@ const BondFilterUpdated = () => {
     }
   };
 
-  // const handleSubmit = () => {
-  //   console.log('Selected Bonds with Threshold:', Array.from(selectedBonds.values()));
-
-  // };
   const handleSubmit = () => {
     const selectedBondsArray = Array.from(selectedBonds.values());
     console.log('Selected Bonds with Threshold:', selectedBondsArray);

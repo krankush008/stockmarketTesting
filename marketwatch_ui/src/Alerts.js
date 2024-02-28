@@ -33,9 +33,9 @@ const Alerts = ({ allBonds, selectedBonds, dispatch }) => {
     useEffect(() => {
         const fetchYourBonds = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/bonds');
+                const response = await axios.get(`http://localhost:8080/api/getAlertsByUserId/${124}`);
                 const responseBonds = response.data.map(bond => ({
-                    isin: bond.bonds_id,
+                    isin: bond.bondId,
                     xirr: bond.xirr
                 }));
                 console.log('responseBonds:', responseBonds);
