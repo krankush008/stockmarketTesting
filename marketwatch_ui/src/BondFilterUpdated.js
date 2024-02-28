@@ -69,7 +69,7 @@ const BondFilterUpdated = () => {
   const handleAddFilter = () => {
     dispatch({ type: 'ADD_FILTER', payload: { creditScore: '', maturity: '', threshold: '', bonds: [] } });
   };
-  
+
   const handleRemoveFilter = (index) => {
     const updatedSelectedBonds = new Map(selectedBonds);
     filters[index].bonds.forEach(bond => updatedSelectedBonds.delete(bond.isin));
@@ -158,26 +158,28 @@ const BondFilterUpdated = () => {
           <ul className="filtered-bonds-list">
           {filter.bonds.map((bond, bondIndex) => (
   <li key={bondIndex} className="bond-item">
-    <label className="bond-label">
+    <span>
       <input
         type="checkbox"
         className="bond-checkbox"
         onChange={() => handleCheckboxChange(bond)}
         checked={selectedBonds.has(bond.isin)}
       />
-      ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturityDate}
-      {selectedBonds.has(bond.isin) && selectedBonds.get(bond.isin).threshold === '' && (
-        <span style={{ color: 'red', marginLeft: '10px' }}>Please enter threshold</span>
-      )}
-      Threshold:
-      <input
-        type="number"
-        className="threshold-input"
-        min="0"
-        value={selectedBonds.has(bond.isin) ? selectedBonds.get(bond.isin).threshold : ''}
-        onChange={(e) => handleThresholdChange(bond, e.target.value)}
-      />
-    </label>
+      <label className="bond-label" style={{ pointerEvents: 'none' }}>
+        ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturityDate}
+        {selectedBonds.has(bond.isin) && selectedBonds.get(bond.isin).threshold === '' && (
+          <span style={{ color: 'red', marginLeft: '10px' }}>Please enter threshold</span>
+        )}
+        Threshold:
+        <input
+          type="number"
+          className="threshold-input"
+          min="0"
+          value={selectedBonds.has(bond.isin) ? selectedBonds.get(bond.isin).threshold : ''}
+          onChange={(e) => handleThresholdChange(bond, e.target.value)}
+        />
+      </label>
+    </span>
   </li>
 ))}
 

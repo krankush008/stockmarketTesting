@@ -65,22 +65,7 @@
     padding: 0;
   }
   
-  .bond-item {
-    margin-bottom: 10px;
-  }
   
-  .bond-label {
-    display: flex;
-    align-items: center;
-  }
-  
-  .bond-checkbox {
-    margin-right: 10px;
-  }
-  
-  .threshold-input {
-    width: 50px;
-  }
   
   .submit-btn {
     background-color: #f44336;
@@ -93,5 +78,21 @@
     font-size: 16px;
     cursor: pointer;
     border-radius: 5px;
+  }
+  .bond-item {
+    margin-bottom: 10px;
+  }
+  
+  .bond-checkbox {
+    margin-right: 5px;
+  }
+  
+  .bond-label {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  .threshold-input {
+    margin-left: 5px;
   }
   
