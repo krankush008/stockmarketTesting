@@ -232,6 +232,6 @@ public class NotifyUsers implements CommandLineRunner {
     @Override
     public void run(String... args) {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(()-> parseHtmlToBonds(), 0L, 1000L,TimeUnit.MILLISECONDS); 
+       // scheduler.scheduleAtFixedRate(()-> parseHtmlToBonds(), 0L, 1000L,TimeUnit.MILLISECONDS); 
     }
 }

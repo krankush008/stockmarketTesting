@@ -9,6 +9,7 @@ export const initialState = {
   maxMonthsRange: 12,
   selectedBonds: new Map(),
 };
+
 export const reducer = (state, action) => {
   switch (action.type) {
     case 'SET_ALL_BONDS':
@@ -33,8 +34,9 @@ export const reducer = (state, action) => {
 const BondFilterUpdated = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { allBonds, filters, maxMonthsRange, selectedBonds } = state;
-
   const [showAlert , setShowAlert] = useState(false);
+  const uniqueCreditScores = useMemo(() => [...new Set(allBonds.map(bond => bond.creditScore))], [allBonds]);
+  const uniqueMonths = useMemo(() => Array.from({ length: maxMonthsRange }, (_, i) => i + 1), [maxMonthsRange]);
 
   useEffect(() => {
     const fetchAllBonds = async () => {
@@ -49,12 +51,8 @@ const BondFilterUpdated = () => {
         console.error('Error fetching all bonds data:', error);
       }
     };
-
     fetchAllBonds();
   }, []);
-
-  const uniqueCreditScores = useMemo(() => [...new Set(allBonds.map(bond => bond.creditScore))], [allBonds]);
-  const uniqueMonths = useMemo(() => Array.from({ length: maxMonthsRange }, (_, i) => i + 1), [maxMonthsRange]);
 
   const filterBonds = useMemo(() => (filters) => {
     return allBonds.filter(bond => {
@@ -126,14 +124,12 @@ const BondFilterUpdated = () => {
       alert('Please enter threshold for all selected bonds');
       return;
     }
-    const alertsDataArray = selectedBondsArray.map(bond => ({
-      bondId: bond.bond.isin,
+    const alerts = selectedBondsArray.map(bond => ({
+      bondsId: bond.bond.isin,
       userId: 123,
       xirr: bond.threshold
     }));
-    console.log('Alerts Data Array:', alertsDataArray);
-
-    axios.put('http://localhost:8080/api/createAlerts', alertsDataArray)
+    axios.put('http://localhost:8080/api/createAlerts', alerts)
       .then(response => {
         console.log('Alerts created successfully:', response.data);
       })
@@ -145,36 +141,34 @@ const BondFilterUpdated = () => {
   return (
     <div className="bond-filter-container">
       <h2 className="page-title">Bond Filters</h2>
-
-     
-      
-      {/* show alert button */}
       <button
-       className='show-alert-btn'
-       onClick={
-        () => setShowAlert(!showAlert)}>
+        className="show-alert-btn"
+        onClick={() => setShowAlert(!showAlert)}
+      >
         {showAlert ? 'Hide Alerts' : 'Show saved Alerts'}
       </button>
-      {showAlert && 
-      (
+      {showAlert && (
         <>
-        <h2> Saved Alerts</h2>
-      <Alerts
-  
-    allBonds={allBonds}
-    selectedBonds={selectedBonds}
-    dispatch={dispatch} 
-  />
-  </>)}
-  
-      <button className="add-filter-btn" onClick={handleAddFilter}>Add Filter</button>
+          <h2>Saved Alerts</h2>
+          <Alerts
+            allBonds={allBonds}
+            selectedBonds={selectedBonds}
+            dispatch={dispatch}
+          />
+        </>
+      )}
+      <button className="add-filter-btn" onClick={handleAddFilter}>
+        Add Filter
+      </button>
       {filters.map((filter, index) => (
         <div key={index} className="filter-section">
           <div className="filter-inputs">
             <label className="filter-label">Credit Score:</label>
             <select
               className="filter-select"
-              onChange={(e) => handleFilterChange(index, 'creditScore', e.target.value)}
+              onChange={(e) =>
+                handleFilterChange(index, 'creditScore', e.target.value)
+              }
               value={filter.creditScore}
             >
               <option value="">Select Credit Score</option>
@@ -187,7 +181,9 @@ const BondFilterUpdated = () => {
             <label className="filter-label">Maturity:</label>
             <select
               className="filter-select"
-              onChange={(e) => handleFilterChange(index, 'maturity', e.target.value)}
+              onChange={(e) =>
+                handleFilterChange(index, 'maturity', e.target.value)
+              }
               value={filter.maturity}
             >
               <option value="">Select Maturity</option>
@@ -199,48 +195,70 @@ const BondFilterUpdated = () => {
             </select>
           </div>
           <div className="filter-buttons">
-            <button className="apply-filter-btn" onClick={() => applyFilters(index)}>Apply Filters</button>
-            <button className="remove-filter-btn" onClick={() => handleRemoveFilter(index)}>Remove</button>
+            <button
+              className="apply-filter-btn"
+              onClick={() => applyFilters(index)}
+            >
+              Apply Filters
+            </button>
+            <button
+              className="remove-filter-btn"
+              onClick={() => handleRemoveFilter(index)}
+            >
+              Remove
+            </button>
           </div>
           <h3 className="filtered-bonds-title">Filtered Bonds:</h3>
           <ul className="filtered-bonds-list">
-
-            {
-      (filter.bonds.length > 0) ? (
-        filter.bonds.map((bond, bondIndex) => (
-          <li key={bondIndex} className="bond-item">
-            <label className="bond-label">
-              <input
-                type="checkbox"
-                className="bond-checkbox"
-                onChange={() => handleCheckboxChange(bond)}
-                checked={selectedBonds.has(bond.isin)}
-              />
-              ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity: {bond.maturityDate}
-              {selectedBonds.has(bond.isin) && selectedBonds.get(bond.isin).threshold === '' && (
-                <span style={{ color: 'red', marginLeft: '10px' }}>Please enter threshold</span>
-              )}
-              Threshold:
-              <input
-                type="number"
-                className="threshold-input"
-                min="0"
-                value={selectedBonds.has(bond.isin) ? selectedBonds.get(bond.isin).threshold : ''}
-                onChange={(e) => handleThresholdChange(bond, e.target.value)}
-              />
-            </label>
-          </li>
-        ))  
-      ) : (
-        <li>No bonds found</li>
-      )
-    }
+            {filter.bonds.length > 0 ? (
+              filter.bonds.map((bond, bondIndex) => (
+                <li key={bondIndex} className="bond-item">
+                  <label className="bond-label">
+                    <input
+                      type="checkbox"
+                      className="bond-checkbox"
+                      onChange={() => handleCheckboxChange(bond)}
+                      checked={selectedBonds.has(bond.isin)}
+                    />
+                    ID: {bond.isin}, Credit Score: {bond.creditScore}, Maturity:{' '}
+                    {bond.maturityDate}
+                    {selectedBonds.has(bond.isin) &&
+                      selectedBonds.get(bond.isin).threshold === '' && (
+                        <span
+                          style={{ color: 'red', marginLeft: '10px' }}
+                        >
+                          Please enter threshold
+                        </span>
+                      )}
+                    Threshold:
+                    <input
+                      type="number"
+                      className="threshold-input"
+                      min="0"
+                      value={
+                        selectedBonds.has(bond.isin)
+                          ? selectedBonds.get(bond.isin).threshold
+                          : ''
+                      }
+                      onChange={(e) =>
+                        handleThresholdChange(bond, e.target.value)
+                      }
+                    />
+                  </label>
+                </li>
+              ))
+            ) : (
+              <li>No bonds found</li>
+            )}
           </ul>
         </div>
       ))}
-      <button className="submit-btn" onClick={handleSubmit}>Submit</button>
+      <button className="submit-btn" onClick={handleSubmit}>
+        Submit
+      </button>
     </div>
   );
-};
-
-export default BondFilterUpdated;
+  };
+  
+  export default BondFilterUpdated;
+  

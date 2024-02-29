@@ -61,6 +61,13 @@ public class AlertsController {
                 savedAlerts.add(alertsRepository.save(alert));
             }
         }
+
+        // Remove alerts that are not in the updated list
+        List<Alerts> existingAlerts = alertsRepository.findByUserId(savedAlerts.get(0).getUserId());
+        existingAlerts.stream()
+                .filter(existingAlert -> !savedAlerts.contains(existingAlert))
+                .forEach(alertsRepository::delete);
+
         return savedAlerts;
     }
 }
