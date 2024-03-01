@@ -118,7 +118,6 @@ const BondFilterUpdated = () => {
 
   const handleSubmit = () => {
     const selectedBondsArray = Array.from(selectedBonds.values());
-    console.log('Selected Bonds with Threshold:', selectedBondsArray);
     const invalidThreshold = selectedBondsArray.some(bond => bond.threshold === '');
     if (invalidThreshold) {
       alert('Please enter threshold for all selected bonds');
