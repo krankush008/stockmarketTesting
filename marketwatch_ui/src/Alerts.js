@@ -13,7 +13,7 @@ const Alerts = (props) => {
   const currentBonds = Array.from(selectedBonds.values()).slice(indexOfFirstBond, indexOfLastBond);
 
   // Change page
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate10 = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div>
@@ -61,7 +61,7 @@ const Alerts = (props) => {
       </table>
       <div className="pagination">
         {Array.from({ length: Math.ceil(selectedBonds.size / itemsPerPage) }, (_, index) => (
-          <button key={index + 1} onClick={() => paginate(index + 1)} className={currentPage === index + 1 ? 'active' : ''}>
+          <button key={index + 1} onClick={() => paginate10(index + 1)} className={currentPage === index + 1 ? 'active' : ''}>
             {index + 1}
           </button>
         ))}
