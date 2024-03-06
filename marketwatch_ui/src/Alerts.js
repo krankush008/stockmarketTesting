@@ -2,7 +2,7 @@ import React, { useEffect, useState} from 'react'
 import './Alerts.css';
 
 const Alerts = (props) => {
-  const {selectedBonds = [], handleThresholdChange, handleCheckboxChange } = props;
+  const {selectedBonds = [], handleThresholdChange10, handleCheckboxChange } = props;
  
   const itemsPerPage = 5; // Set the number of items per page
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,7 +52,7 @@ const Alerts = (props) => {
                   className="threshold-input"
                   min="0"
                   value={selectedBonds.get(bond.bond.isin).threshold}
-                  onChange={(e) => handleThresholdChange(bond.bond, e.target.value)}
+                  onChange={(e) => handleThresholdChange10(bond.bond, e.target.value)}
                 />
               </td>
             </tr>
